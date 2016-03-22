@@ -1,92 +1,5 @@
 
-class Foot(object):
-  def __init__(self,beta,gamma,delta,phi):
-    self.beta = beta
-    self.gamma = gamma
-    self.delta = delta
-    self.phi = phi
-  
-  def X(self,t):
-    return(
-      self.gamma - (t-self.phi)%1.0
-        if (t-self.phi)%1<=self.beta else #self.phi%1<=t%1 and t%1<=(self.phi+self.beta)%1 else
-      nan
-    )
-
-  def R(self,t):
-    x = self.X(t)
-    return((nan,nan) if isnan(x) else (x,self.delta))  
-  
-  def __repr__(self):
-    return("Foot("+
-      "beta="+str(self.beta)+
-      ",gamma="+str(self.gamma)+
-      ",delta="+str(self.delta)+
-      ",phi="+str(self.phi)+
-    ")")
-  
-class Quadruped(object):
-  def __init__(self,k):
-    self.feet = [Foot(k[i],k[4+i],k[8+i],k[12+i]) for i in xrange(4)]
-  
-  def R(self,t):
-    return([f.R(t) for f in self.feet])
-  
-  def eta(self,t):
-    x = self.R(t)
-    return((
-      x[0][0]+x[1][0],
-      x[0][0]+x[3][0],
-      x[2][0]+x[1][0],
-      x[2][0]+x[3][0]
-    ))
-
-# According to MG-F this walker is stable
-beta = 11.0/12.0
-delta = 1.0/4.0
-k = (
-  beta,beta,beta,beta, # Duty cycle
-  1,1,0,0, # Initial foot positions
-  delta,-delta,delta,-delta,
-  0.0,1.0/2.0,3.0/4.0,1.0/4.0
-)
-
-f = Foot(0.75,0.3,0.3,0.0)
-
-q = Quadruped(k)
-fp = array([q.R(t) for t in linspace(0,1,1000)])
-for m in fp.transpose(1,2,0):
-  plot(*m,alpha=0.5,lw=5)
-
-figure()
-eta = array([q.eta(t) for t in linspace(0,1,1000)])
-plot(nanmax(eta,1))
-plot(nanmin(eta,1))
-hlines(0,0,len(eta))
-
-# According to MG-F then this walker should just be stable
-beta2 = 3.0/4.0
-delta2 = 1.0/4.0
-a = beta2/2 + 1.0
-dg = [0.0,0.0,1.0,1.0]
-k2 = (
-  beta2,beta2,beta2,beta2, # Duty cycle
-  a+beta2/2.0,a+beta2/2,-a+beta2/2,-a+beta2/2, # Initial foot positions
-  delta2,-delta2,delta2,-delta2,
-  0.0,1.0/2.0,beta2,beta2-1.0/2.0
-)
-q2 = Quadruped(k2)
-eta2 = array([q2.eta(t) for t in linspace(0,1,1000)])
-marg = minimum(nanmax(eta2,1),-nanmin(eta2,1))
-#marg = [-10 if isnan(m) else m for m in marg]
-
-figure()
-plot(nanmax(eta2,1))
-plot(nanmin(eta2,1))
-hlines(0,0,len(eta2))
-plot(marg)
-
-
+from staticstab import Foot,Quadruped
 
 M = list()
 shifts = linspace(-1.0,1.0,1000)
@@ -224,11 +137,6 @@ from scipy.interpolate import RectBivariateSpline
 rat0 = 2
 rat1 = 2
 
-#Mdmp,Ap,Bp = interpM(rat0,rat1,N,Mdm)
-#Mdap,Ap,Bp = interpM(rat0,rat1,N,Mda)
-#Mbmp,Ap,Bp = interpM(rat0,rat1,N,Mbm)
-#Mbap,Ap,Bp = interpM(rat0,rat1,N,Mba)
-
 from matplotlib.colors import LinearSegmentedColormap
 cmgreend = {'red':   ((0.0,  0.5, 0.5),
                    (1.0,  0.5, 0.5)),
@@ -261,24 +169,7 @@ ax1.clabel(C,c='k',fontsize=fs)
 ax1.set_axis_bgcolor('k')
 ax1.set_xticks([-3*pi/2,-pi,-pi/2,0,pi/2])
 ax1.set_xticklabels(["$-3\pi/2$","$-\pi$","$-\pi/2$","$0$","$\pi/2$"])
-'''
-ax2 = fig.add_subplot(2,2,3)
-ax2.contourf(Bpp,Ap,Mbmp,V0,cmap=cmgreen)
-C = ax2.contour(Bpp,Ap,Mbmp,V0,colors='k',linewidths=3)
-ax2.clabel(C,c='k',fontsize=fs)
-ax2.set_axis_bgcolor('k')
-ax2.set_xticks([-3*pi/2,-pi,-pi/2,0,pi/2])
-ax2.set_xticklabels(["$-3\pi/2$","$-\pi$","$-\pi/2$","$0$","$\pi/2$"])
 
-
-ax3 = fig.add_subplot(2,2,4)
-ax3.contourf(Bpp,Ap,Mbap,V1,cmap=cmgreen)
-C = ax3.contour(Bpp,Ap,Mbap,V1,colors='k',linewidths=3)
-ax3.clabel(C,c='k',fontsize=fs)
-ax3.set_axis_bgcolor('k')
-ax3.set_xticks([-3*pi/2,-pi,-pi/2,0,pi/2])
-ax3.set_xticklabels(["$-3\pi/2$","$-\pi$","$-\pi/2$","$0$","$\pi/2$"])
-'''
 xlabel("projected distance to trot $\lambda$ (rad)")
 
 
@@ -409,20 +300,6 @@ plotCross(ax,walkPh,pi/5.0,col='#505050',txt='walk')
 for pacePh in pacePhs:
   plotCross(ax,pacePh,txt='pace')
 
-#ax.scatter(pi/2,pi,3*pi/2,color='k',marker='8',s=1600,facecolor='none',lw=5,alpha=0.9)
-#ax.scatter(0,pi,0,color='k',marker='D',s=1600,facecolor='none',lw=5,alpha=0.9)
-#ax.scatter(2*pi,pi,0,color='k',marker='D',s=1600,facecolor='none',lw=5,alpha=0.9)
-#ax.scatter(0,pi,2*pi,color='k',marker='D',s=1600,facecolor='none',lw=5,alpha=0.9)
-#ax.scatter(2*pi,pi,2*pi,color='k',marker='D',s=1600,facecolor='none',lw=5,alpha=0.9)
-#ax.scatter(2*pi,2*pi,2*pi,color='k',marker='p',s=1600,facecolor='none',lw=5,alpha=0.9)
-#ax.scatter(0,2*pi,2*pi,color='k',marker='p',s=1600,facecolor='none',lw=5,alpha=0.9)
-#ax.scatter(0,0,2*pi,color='k',marker='p',s=1600,facecolor='none',lw=5,alpha=0.9)
-#ax.scatter(0,0,0,color='k',marker='p',s=1600,facecolor='none',lw=5,alpha=0.9)
-#ax.scatter(2*pi,0,2*pi,color='k',marker='p',s=1600,facecolor='none',lw=5,alpha=0.9)
-#ax.scatter(2*pi,2*pi,0,color='k',marker='p',s=1600,facecolor='none',lw=5,alpha=0.9)
-#ax.scatter(2*pi,0,0,color='k',marker='p',s=1600,facecolor='none',lw=5,alpha=0.9)
-#ax.scatter(0,2*pi,0,color='k',marker='p',s=1600,facecolor='none',lw=5,alpha=0.9)
-#ax.scatter(pi,pi,pi,color='k',marker='h',s=1600,facecolor='none',lw=5,alpha=0.9)
 ax.plot([-pi,pi],[pi,pi],[pi,-pi],c='k',lw=2)
 ax.set_xlim(-pi,pi)
 ax.set_ylim(0,2*pi)
@@ -464,56 +341,5 @@ savefig("usedgaitscollapsed.pdf")
 savefig("usedgaitscollapsed.png")
 savefig("usedgaitscollapsed.svg")
 
-'''
-fig = figure()
-ax = fig.gca(projection='3d')
-surf = ax.plot_surface(Bp, Ap, Mdmp[:,:], rstride=1, cstride=1, cmap=cm.coolwarm,
-        linewidth=0, antialiased=False)
-ax.set_xlabel("phase shift from ideal (fraction cycle)")
-ax.set_ylabel("duty cycle (fraction cycle)")
-ax.set_zlabel("minimum stability margin (stride lengths)")
-ax.set_zlim3d([-2.0,2.2])
-savefig("stabmarginvarydutyoptimalmin.png")
 
-fig = figure()
-ax = fig.gca(projection='3d')
-surf = ax.plot_surface(Bp, Ap, Mdap[:,:], rstride=1, cstride=1, cmap=cm.coolwarm,
-        linewidth=0, antialiased=False)
-ax.set_xlabel("phase shift from ideal (fraction cycle)")
-ax.set_ylabel("duty cycle (fraction cycle)")
-ax.set_zlabel("average stability margin (stride lengths)")
-ax.set_zlim3d([-2.0,2.2])
-savefig("stabmarginvarydutyoptimalaverage.png")
-
-fig = figure()
-ax = fig.gca(projection='3d')
-surf = ax.plot_surface(Bp, Ap, Mbmp[:,:], rstride=1, cstride=1, cmap=cm.coolwarm,
-        linewidth=0, antialiased=False)
-ax.set_xlabel("phase shift from ideal (fraction cycle)")
-ax.set_ylabel("duty cycle (fraction cycle)")
-ax.set_zlabel("minimum stability margin (stride lengths)")
-ax.set_zlim3d([-2.0,2.2])
-savefig("stabmarginbaddutyoptimalmin.png")
-
-fig = figure()
-ax = fig.gca(projection='3d')
-surf = ax.plot_surface(Bp, Ap, Mbap[:,:], rstride=1, cstride=1, cmap=cm.coolwarm,
-        linewidth=0, antialiased=False)
-ax.set_xlabel("phase shift from ideal (fraction cycle)")
-ax.set_ylabel("duty cycle (fraction cycle)")
-ax.set_zlabel("average stability margin (stride lengths)")
-ax.set_zlim3d([-2.0,2.2])
-savefig("stabmarginbaddutyoptimalaverage.png")
-
-dx,dy,dz = ax.get_xlim3d(),ax.get_ylim3d(),ax.get_zlim3d()
-fig = figure()
-ax = fig.gca(projection='3d')
-ax.plot([0],[0],[0])
-ax.set_xlabel("phase shift from ideal (fraction cycle)")
-ax.set_ylabel("duty cycle (fraction cycle)")
-ax.set_zlabel("average stability margin (stride lengths)")
-ax.set_xlim3d(dx)
-ax.set_ylim3d(dy)
-ax.set_zlim3d(dz)
-savefig("stabmarginblank.png")
 '''

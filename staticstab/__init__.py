@@ -10,3 +10,4 @@ L{Polyped} and L{footfallPattern}.
 '''
 
 from staticstable import Polyped,footfallPattern,shiftedFootfallPattern
+from mfsystem import Quadruped,Foot
