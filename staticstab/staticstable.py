@@ -34,7 +34,7 @@ TYPICAL USAGE
   >>> p.footPositions(pi)
   array([[-1.46666667,  1.        ],
          [ 0.76666667, -1.        ],
-         [ 0.53333333,  1.        ]])
+         [ 0.3       ,  1.        ]])
 
 THEORY OF OPERATION
 ===================
@@ -106,7 +106,7 @@ def footfallPattern(d,phi,eps=1e-10,fullOutput=False):
   # duplicates
   events = array(sorted(hstack([fon,foff])))
   events0 = None
-  while events0==None or len(events0)!=len(events) or all(events0!=events):
+  while events0 is None or len(events0)!=len(events) or all(events0!=events):
     events0 = events
     events = hstack([events,events[0]])
     events = events[abs(events[1:]-events[:-1])%(2*pi)>eps]
@@ -174,7 +174,7 @@ class Polyped(object):
     >>> p.footPositions(pi)
     array([[-1.46666667,  1.        ],
            [ 0.76666667, -1.        ],
-           [ 0.53333333,  1.        ]])
+           [ 0.3       ,  1.        ]])
   
   @ivar g: relative phases
   @type g: float, array

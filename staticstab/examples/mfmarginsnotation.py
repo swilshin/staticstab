@@ -1,143 +1,81 @@
 
 from staticstab import Foot,Quadruped
+from numpy import (linspace,array,minimum,isnan,nanmax,nanmin,where,mean,nan,
+  meshgrid,zeros_like,pi)
+from pylab import figure,plot,savefig,xlabel,ylabel,xlim,hlines
 
-M = list()
-shifts = linspace(-1.0,1.0,1000)
-for lda in shifts:
-  k3 = (
-    beta2,beta2,beta2,beta2, # Duty cycle
-    a+beta2/2.0,a+beta2/2,-a+beta2/2,-a+beta2/2, # Initial foot positions
-    delta2,-delta2,delta2,-delta2,
-    0.0+dg[0]*lda,1.0/2.0+dg[1]*lda,beta2+dg[2]*lda,beta2-1.0/2.0+dg[3]*lda
-  )
-  q3 = Quadruped(k3)
-  eta3 = array([q3.eta(t) for t in linspace(0,1,1000)])
-  marg = minimum(nanmax(eta3,1),-nanmin(eta3,1))
-  idxOne = where(4-sum(isnan(eta3),1)==1)[0]
+def mfmargins(beta,lda,delta,tpe="optimal",Nsubcyc=100,nanval=nan,mode='min'):
+  '''
+  Calculate a representative stability margin for the kinematic gait formula 
+  specified by beta, lda, and delta as detailed in McGhee and Frank (1968)
+  '''
+  a = beta/2.0 + 1.0
+  if tpe=="optimal":
+    '''
+    tpe controls if phase is adjusted with duty cycle for more optimal 
+    results. This has no major impact on our core conclusions.
+    '''
+    k = (
+      beta,beta,beta,beta, # Duty cycle
+      a+beta/2.0,a+beta/2,-a+beta/2,-a+beta/2, # Initial foot positions
+      delta,-delta,delta,-delta,
+      0.0+dg[0]*lda,1.0/2.0+dg[1]*lda,beta+dg[2]*lda,beta-1.0/2.0+dg[3]*lda
+    )
+  elif tpe=="bad":
+    k = (
+      beta,beta,beta,beta, # Duty cycle
+      a+beta/2.0,a+beta/2.0,-a+beta/2.0,-a+beta/2.0, # Initial foot positions
+      delta,-delta,delta,-delta,
+      0.0+dg[0]*lda,1.0/2.0+dg[1]*lda,0.75+dg[2]*lda,0.25+dg[3]*lda
+    )
+  else:
+    raise "Invalid desired kinematic gait formula."
+  q = Quadruped(k)
+  eta = array([q.eta(t) for t in linspace(0,1,Nsubcyc)])
+  
+  marg = minimum(nanmax(eta,1),-nanmin(eta,1))
+  
+  idxOne = where(4-sum(isnan(eta),1)==1)[0]
   marg[idxOne] = -abs(marg[idxOne])
-  smarg = [-100 if isnan(m) else m for m in marg]
-  M.append((min(smarg) if not isnan(mean(marg)) else nan,mean(marg)))
-figure()
-plot(shifts,M)
-xlim(-0.5,0.5)
-hlines(0,shifts.min(),shifts.max())
+  if mode=="min":
+    smarg = [nanval if isnan(m) else m for m in marg]    
+    return(min(smarg))
+  elif mode=="average":
+    mu = mean(marg)
+    return(nanval if isnan(mu) else mu)
+  else:
+    raise "Invalid summary statistic for margin."
 
-# No entry is below -2 so use minus 2 as a minimum to get the plots to work.
-def margins(beta2,lda):
-  a = beta2/2 + 1.0  
-  k3 = (
-    beta2,beta2,beta2,beta2, # Duty cycle
-    a+beta2/2.0,a+beta2/2,-a+beta2/2,-a+beta2/2, # Initial foot positions
-    delta2,-delta2,delta2,-delta2,
-    0.0+dg[0]*lda,1.0/2.0+dg[1]*lda,beta2+dg[2]*lda,beta2-1.0/2.0+dg[3]*lda
-  )
-  q3 = Quadruped(k3)
-  eta3 = array([q3.eta(t) for t in linspace(0,1,1000)])
-  marg = minimum(nanmax(eta3,1),-nanmin(eta3,1))
-  idxOne = where(4-sum(isnan(eta3),1)==1)[0]
-  marg[idxOne] = -abs(marg[idxOne])
-  smarg = [-2 if isnan(m) else m for m in marg]
-  return(min(smarg))
-
-
-def marginsdfbad(beta2,lda):
-  a = beta2/2 + 1.0  
-  k3 = (
-    beta2,beta2,beta2,beta2, # Duty cycle
-    a+beta2/2.0,a+beta2/2,-a+beta2/2,-a+beta2/2, # Initial foot positions
-    delta2,-delta2,delta2,-delta2,
-    0.0+dg[0]*lda,1.0/2.0+dg[1]*lda,0.75+dg[2]*lda,0.25+dg[3]*lda
-  )
-  q3 = Quadruped(k3)
-  eta3 = array([q3.eta(t) for t in linspace(0,1,1000)])
-  marg = minimum(nanmax(eta3,1),-nanmin(eta3,1))
-  idxOne = where(4-sum(isnan(eta3),1)==1)[0]
-  marg[idxOne] = -abs(marg[idxOne])
-  smarg = [-2 if isnan(m) else m for m in marg]
-  return(min(smarg))
-
-def marginsdfbadaverage(beta2,lda):
-  a = beta2/2 + 1.0  
-  k3 = (
-    beta2,beta2,beta2,beta2, # Duty cycle
-    a+beta2/2.0,a+beta2/2,-a+beta2/2,-a+beta2/2, # Initial foot positions
-    delta2,-delta2,delta2,-delta2,
-    0.0+dg[0]*lda,1.0/2.0+dg[1]*lda,0.75+dg[2]*lda,0.25+dg[3]*lda
-  )
-  q3 = Quadruped(k3)
-  eta3 = array([q3.eta(t) for t in linspace(0,1,1000)])
-  marg = minimum(nanmax(eta3,1),-nanmin(eta3,1))
-  idxOne = where(4-sum(isnan(eta3),1)==1)[0]
-  marg[idxOne] = -abs(marg[idxOne])
-  #smarg = [-2 if isnan(m) else m for m in marg]
-  mu = mean(marg)
-  return(mu if not isnan(mu) else nan)#-2)
-
-def marginsaverage(beta2,lda):
-  a = beta2/2 + 1.0
-  k3 = (
-    beta2,beta2,beta2,beta2, # Duty cycle
-    a+beta2/2.0,a+beta2/2,-a+beta2/2,-a+beta2/2, # Initial foot positions
-    delta2,-delta2,delta2,-delta2,
-    0.0+dg[0]*lda,1.0/2.0+dg[1]*lda,beta2+dg[2]*lda,beta2-1.0/2.0+dg[3]*lda
-  )
-  q3 = Quadruped(k3)
-  eta3 = array([q3.eta(t) for t in linspace(0,1,1000)])
-  marg = minimum(nanmax(eta3,1),-nanmin(eta3,1))
-  idxOne = where(4-sum(isnan(eta3),1)==1)[0]
-  marg[idxOne] = -abs(marg[idxOne])
-  #smarg = [-2 if isnan(m) else m for m in marg]
-  mu = mean(marg)
-  return(mu if not isnan(mu) else -2)
-
-N = 200
+Ngrid = 100
+Nsubcyc = 100
+beta2 = 3.0/4.0
+delta2 = 1.0/4.0
+a = beta2/2 + 1.0
+dg = [0.0,0.0,1.0,1.0]
 b0 = 0.6
 b1 = 0.9
-shifts = linspace(-0.5,0.5,N)
-betas = linspace(b0,b1,N)
+shifts = linspace(-0.5,0.5,Ngrid)
+betas = linspace(b0,b1,Ngrid)
 A,B = meshgrid(betas,shifts)
 
-Mbm = nan*zeros_like(A)
-for i in xrange(N):
-  for j in xrange(N):
-    Mbm[i,j] = marginsdfbad(A[i,j],B[i,j])
-
-Mba = nan*zeros_like(A)
-for i in xrange(N):
-  for j in xrange(N):
-    Mba[i,j] = marginsdfbadaverage(A[i,j],B[i,j])
-
-Mda = nan*zeros_like(A)
-for i in xrange(N):
-  for j in xrange(N):
-    Mda[i,j] = marginsaverage(A[i,j],B[i,j])
-
 Mdm = nan*zeros_like(A)
-for i in xrange(N):
-  for j in xrange(N):
-    Mdm[i,j] = margins(A[i,j],B[i,j])
+Mbm = nan*zeros_like(A)
+Mba = nan*zeros_like(A)
+Mda = nan*zeros_like(A)
 
+for i in xrange(Ngrid):
+  for j in xrange(Ngrid):
+    Mdm[i,j] = mfmargins(A[i,j],B[i,j],delta2,nanval=nan)
+    Mbm[i,j] = mfmargins(A[i,j],B[i,j],delta2,'bad',nanval=nan)
+    Mba[i,j] = mfmargins(A[i,j],B[i,j],delta2,'bad',nanval=nan,mode='average')
+    Mda[i,j] = mfmargins(A[i,j],B[i,j],delta2,nanval=nan,mode='average')
     
-# Interpolate and plot
-
-def interpM(rat0,rat1,N,M):
-  shiftsp = linspace(-0.5,0.5,N*rat0)
-  betasp = linspace(b0,b1,N*rat1)
-  Ap,Bp = meshgrid(betasp,shiftsp)
-  Mdmp = zeros_like(Ap)
-
-  s = RectBivariateSpline(shifts,betas,M,kx=1,ky=1,s=0)
-  Mp = s(shiftsp,betasp)
-  return(Mp,Ap,Bp)
-  
+# Plot  
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.interpolate import RectBivariateSpline
-
-
-rat0 = 2
-rat1 = 2
-
 from matplotlib.colors import LinearSegmentedColormap
+
+# Set up a green colour map for making stability plots
 cmgreend = {'red':   ((0.0,  0.5, 0.5),
                    (1.0,  0.5, 0.5)),
 
@@ -171,8 +109,6 @@ ax1.set_xticks([-3*pi/2,-pi,-pi/2,0,pi/2])
 ax1.set_xticklabels(["$-3\pi/2$","$-\pi$","$-\pi/2$","$0$","$\pi/2$"])
 
 xlabel("projected distance to trot $\lambda$ (rad)")
-
-
 savefig("stabilitycontours.pdf")
 savefig("stabilitycontours.png")
 savefig("stabilitycontours.svg")
@@ -340,6 +276,3 @@ for i in xrange(2):
 savefig("usedgaitscollapsed.pdf")
 savefig("usedgaitscollapsed.png")
 savefig("usedgaitscollapsed.svg")
-
-
-'''
