@@ -7,11 +7,13 @@ odd middle feet to demonstrate that the convex hull is indeed found.
 @contact: swilshin@rvc.ac.uk
 @date: Jan 2015
 '''
+
 from staticstab import Polyped
 
 from numpy import array,ones,pi
+from pylab import plot,scatter,figure,savefig,axis,tight_layout
 
-from pylab import plot,scatter,figure,show,axis,tight_layout
+from os.path import join as osjoin
 
 # Define polyped parameters
 g = 2.0*pi*ones((7))/8.0 # Relative phase
@@ -33,4 +35,6 @@ plot(*p.support(pi).boundary.coords.xy,color='b',lw=4)
 scatter(*array(p.footPositions(pi)).T,s=900,c='g')
 axis('off')
 tight_layout()
-show()
+savefig(osjoin("figure","spiderfootplacements.png"))
+savefig(osjoin("figure","spiderfootplacements.pdf"))
+savefig(osjoin("figure","spiderfootplacements.svg"))

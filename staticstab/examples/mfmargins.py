@@ -2,10 +2,13 @@
 Make the plots for the dogs on rough terrain paper. 
 '''
 from staticstab import Quadruped
+
 from numpy import (linspace,array,minimum,isnan,nanmax,nanmin,where,mean,nan,
   meshgrid,zeros_like,pi)
 from pylab import figure,savefig,xlabel,ylabel
 from matplotlib.colors import LinearSegmentedColormap
+
+from os.path import join as osjoin
 
 def mfmargins(beta,lda,delta,tpe="optimal",Nsubcyc=100,nanval=nan,mode='min',dg = (0.0,0.0,1.0,1.0)):
   '''
@@ -121,6 +124,6 @@ ax1.set_xticks([-3*pi/2,-pi,-pi/2,0,pi/2])
 ax1.set_xticklabels(["$-3\pi/2$","$-\pi$","$-\pi/2$","$0$","$\pi/2$"])
 xlabel("projected distance to trot $\lambda$ (rad)")
 
-savefig("stabilitycontours.pdf")
-savefig("stabilitycontours.png")
-savefig("stabilitycontours.svg")
+savefig(osjoin("figure","stabilitycontours.pdf"))
+savefig(osjoin("figure","stabilitycontours.png"))
+savefig(osjoin("figure","stabilitycontours.svg"))
