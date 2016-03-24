@@ -12,14 +12,14 @@ OVERVIEW
 MAIN CLASSES
 ============
   
-  Polyped - Instantiated with a McGhee and Frank style limb configuration 
+  L{Polyped} - Instantiated with a McGhee and Frank style limb configuration 
   specification. uses L{footfallPattern} to calculate footfall patterns. 
   Can calculate the polygon of support and stability margin.
 
 MAIN FUNCTIONS
 ==============
 
-  footfallPattern - Calculate the foot on and off events and foot contact 
+  L{footfallPattern} - Calculate the foot on and off events and foot contact 
   patterns from a set of relative phases and duty factors.
 
 TYPICAL USAGE
@@ -54,6 +54,24 @@ REFERENCES
   McGhee, Robert B., and Frank, Andrew A. "On the stability properties of 
   quadruped creeping gaits." Mathematical Biosciences 3 (1968): 331-351.
 
+LICENSE
+=======
+  
+  This file is part of Simon Wilshin's staticstab module.
+
+  Simon Wilshin's staticstab module is free software: you can redistribute 
+  it and/or modify it under the terms of the GNU General Public License as 
+  published by the Free Software Foundation, either version 3 of the License, 
+  or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+  
 @author: Simon Wilshin
 @contact: swilshin@rvc.ac.uk
 @date: Dec 2014

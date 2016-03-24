@@ -5,4 +5,4 @@ epydoc \
   --graph all \
   --html \
   -v \
-  staticstab/__init__.py staticstab/staticstable.py staticstab/mfsystem.py
+  staticstab/*.py /staticstab/examples/*.py
