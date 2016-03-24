@@ -1,7 +1,8 @@
 
 from scipy.optimize import fmin
-from numpy import nan,sum,min
-from staticstable import footfallPattern,shiftedFootfallPattern
+from numpy import nan,sum,min,pi,array,linspace,where,diff,argmax,isnan
+from staticstab import shiftedFootfallPattern
+from pylab import figure,plot
 
 def mfConfigs(x,eta):
   if sum(x)<2:
